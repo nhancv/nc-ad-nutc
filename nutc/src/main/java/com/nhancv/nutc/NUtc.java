@@ -77,12 +77,15 @@ public class NUtc {
                 getInstance().log("Need to build again. The below result is local Utc.")
                              .refreshBuildUtcTime();
             }
-            long getCacheLastUtcTime = getInstance().getNcache().getCacheLastUtcTime();
-            long getCacheElapsedRealTime = getInstance().getNcache().getCacheElapsedRealTime();
-            if (getCacheLastUtcTime > 0 && getCacheElapsedRealTime > 0) {
-                return getInstance().getUtc(getCacheLastUtcTime, getCacheElapsedRealTime);
+            long res = System.currentTimeMillis();
+            if (getInstance().getNcache() != null) {
+                long getCacheLastUtcTime = getInstance().getNcache().getCacheLastUtcTime();
+                long getCacheElapsedRealTime = getInstance().getNcache().getCacheElapsedRealTime();
+                if (getCacheLastUtcTime > 0 && getCacheElapsedRealTime > 0) {
+                    res = getInstance().getUtc(getCacheLastUtcTime, getCacheElapsedRealTime);
+                }
             }
-            return System.currentTimeMillis();
+            return res;
         }
         return getInstance().getUtc(lastUtc, getInstance().getCacheElapsedRealTime());
     }
@@ -92,7 +95,7 @@ public class NUtc {
     }
 
     public void buildUtcTime(final UTCTime callback) {
-        if (isConnected(applicationContext.get())) {
+        if (applicationContext != null && isConnected(applicationContext.get())) {
             new AsyncTask<Void, Void, Long>() {
                 @Override
                 protected Long doInBackground(Void... params) {
@@ -113,7 +116,7 @@ public class NUtc {
                 protected void onPostExecute(Long utcTimeStamp) {
                     if (utcTimeStamp == -1) {
                         if ((maxRetryTime == -1 || retryTime < maxRetryTime) && isNeedToBuild() &&
-                            isConnected(applicationContext.get())) {
+                            applicationContext != null && isConnected(applicationContext.get())) {
                             refreshBuildUtcTime();
                             retryTime++;
                         }
@@ -123,7 +126,9 @@ public class NUtc {
                         //cache time
                         cacheLastUtc = utcTimeStamp;
                         cacheElapsedRealTime = SystemClock.elapsedRealtime();
-                        ncache.cacheTime(cacheLastUtc, cacheElapsedRealTime);
+                        if (ncache != null) {
+                            ncache.cacheTime(cacheLastUtc, cacheElapsedRealTime);
+                        }
                         //notify
                         if (callback != null) {
                             callback.getTime(utcTimeStamp);
@@ -264,10 +269,10 @@ public class NUtc {
             String action = intent.getAction();
             switch (action) {
                 case ConnectivityManager.CONNECTIVITY_ACTION:
-                    if (getInstance().isConnected(context)) {
-                        if (getInstance().isNeedToBuild()) {
-                            getInstance().refreshBuildUtcTime();
-                        }
+                    if (getInstance().isConnected(context)
+                        && getInstance().getApplicationContext() != null
+                        && getInstance().isNeedToBuild()) {
+                        getInstance().refreshBuildUtcTime();
                     }
                     break;
             }
