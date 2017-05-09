@@ -11,8 +11,8 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 
-public class SntpClient {
-    private static final String TAG = SntpClient.class.getSimpleName();
+public class NSntpClient {
+    private static final String TAG = NSntpClient.class.getSimpleName();
 
     private static final int RECEIVE_TIME_OFFSET = 32;
     private static final int TRANSMIT_TIME_OFFSET = 40;

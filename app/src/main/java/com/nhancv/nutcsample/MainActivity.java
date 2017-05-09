@@ -22,23 +22,19 @@ public class MainActivity extends AppCompatActivity {
         tvMessage = (TextView) findViewById(R.id.tvMessage);
         btRequest = (Button) findViewById(R.id.btRequest);
 
-        NUtc.build(new NUtc.UTCTime() {
-            @Override
-            public void getTime(Long utcTimeStamp) {
-                showLog(utcTimeStamp);
-            }
-        });
+        NUtc.getInstance().setEnableLog(true);
+        NUtc.build(getApplicationContext());
 
         btRequest.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showLog(NUtc.getUtcNow());
+                showLog("Request: " + NUtc.getUtcNow());
             }
         });
     }
 
-    private void showLog(Long utcTimeStamp) {
-        Log.e(TAG, String.valueOf(utcTimeStamp));
-        tvMessage.setText(String.valueOf(utcTimeStamp));
+    private void showLog(String message) {
+        Log.e(TAG, message);
+        tvMessage.setText(message);
     }
 }
